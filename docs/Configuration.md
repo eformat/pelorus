@@ -15,14 +15,14 @@ The following configurations may be made through the `values.yaml` file:
 | `openshift_prometheus_htpasswd_auth` | yes | The contents for the htpasswd file that Prometheus will use for basic authentication user. | User: `internal`, Password: `changeme` |
 | `openshift_prometheus_basic_auth_pass` | yes | The password that grafana will use for its Prometheus datasource. Must match the above. | `changme` |
 | `custom_ca` | no | Whether or not the cluster serves custom signed certificates for ingress (e.g. router certs). If `true` we will load the custom via the [certificate injection method](https://docs.openshift.com/container-platform/4.4/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki)  | `false`  |
-| `extra_prometheus_hosts` | no | Configures additional prometheus instances for a multi-cluster setup. See [Deploying across multple clusters](/page/Install.md#deploying-across-multiple-clusters) for details. | Nil |
 | `exporters` | no | Specified which exporters to install. See [Configuring Exporters](#configuring-exporters). | Installs deploytime exporter only. |
 
 ## Configuring Exporters
 
 An _exporter_ is a data collection application that pulls data from various tools and platforms and exposes it such that it can be consumed by Pelorus dashboards. Each exporter gets deployed individually alongside the core Pelorus stack.
 
-Exporters can be deployed and configured via the `exporters.instances` list of a `values.yaml` file. Some exporters also require secrets to be created when integrating with external tools and platforms. A sample exporter configuration may look like this:
+Exporters can be deployed and configured via a list of `exporters.instances` inside the `values.yaml` file. Some exporters also require secrets to be created when integrating with external tools and platforms. A sample exporter configuration may look like this:
+
 
 ```
 exporters:
@@ -37,7 +37,7 @@ exporters:
     source_url: https://github.com/redhat-cop/pelorus.git
 ```
 
-Deploying additional exporters can be done by adding to the `exporters.instances` list. In some cases, you may want to deploy a single exporter multiple times to gather data from different sources. For example, if you wanted to pull commit data from both GitHub and a private GitHub Enterprise instance, you would deploy two instances of the Commit Time Exporter like so:
+Additionally, you may want to deploy a single exporter multiple times to gather data from different sources. For example, if you wanted to pull commit data from both GitHub and a private GitHub Enterprise instance, you would deploy two instances of the Commit Time Exporter like so:
 
 ```
 exporters:
@@ -62,13 +62,13 @@ exporters:
     source_url: https://github.com/redhat-cop/pelorus.git
 ```
 
-Each exporter additionally takes a unique set of environment variables to further configure its integrations and behavior. Each of those environment variables can be set either by placing the literal keys and values under `extraEnv` or by creating a kubernetes secre with literal values and listing the secret name under `env_from_secrets`. Those configurations are detailed below.
+Each exporter additionally takes a unique set of environment variables to further configure its integrations and behavior. These can be set with literal keys names and values under `extraEnv` or by creating a kubernetes secret and listing the secret name under `env_from_secrets`. As detailed below.
 
 ### Commit Time Exporter
 
 The job of the commit time exporter is to find relevant builds in OpenShift and associate a commit from the build's source code repository with a container image built from that commit. We capture a timestamp for the commit, and the resulting image hash, so that the Deploy Time Exporter can later associate that image with a production deployment.
 
-In order for proper collection, we require that all builds associated with a particular application be labelled with the same `app.kubernetes.io/name=<app_name>` label. 
+We require that all builds associated with a particular application be labelled with the same `app.kubernetes.io/name=<app_name>` label. 
 
 Currently we support GitHub and GitLab, with BitBucket coming soon. Open an issue or a pull request to add support for additional Git providers!
 
